@@ -24,124 +24,126 @@ Array.prototype.remove = function(index) {
 };
 
 function scanImage(imageData){
+	var detectedRegions = [],
+	mergeRegions = [],
+	width = canvas.width,
+	lastFrom = -1,
+	lastTo = -1;
 
-var detectedRegions = [],
-mergeRegions = [],
-width = canvas.width,
-lastFrom = -1,
-lastTo = -1;
-
 	
-var addMerge = function(from, to){
-	lastFrom = from;
-	lastTo = to;
-	var len = mergeRegions.length,
-	fromIndex = -1,
-	toIndex = -1;
-	
-	
-	for(var i = 0; i < len; i++){
-	
-		var region = mergeRegions[i],
-		rlen = region.length;
+	var addMerge = function(from, to){
+		lastFrom = from;
+		lastTo = to;
+		var len = mergeRegions.length,
+		fromIndex = -1,
+		toIndex = -1;
 		
-		for(var o = 0; o < rlen; o++){
 		
-			if(region[o] == from){
-				fromIndex = i;
-			}
+		for(var i = 0; i < len; i++){
+		
+			var region = mergeRegions[i],
+			rlen = region.length;
 			
-			if(region[o] == to){
-				toIndex = i;
-			}
-									
-		}
-		
-	}
-
-	if(fromIndex != -1 && toIndex != -1 && fromIndex == toIndex){
-		return;
-	}
-	
-	if(fromIndex == -1 && toIndex == -1){
-
-		mergeRegions.push([from, to]);
-		
-		return;
-	}
-	if(fromIndex != -1 && toIndex == -1){
-
-		mergeRegions[fromIndex].push(to);
-		return;
-	}
-	if(fromIndex == -1 && toIndex != -1){
-		mergeRegions[toIndex].push(from);
-		return;
-	}
-	if(fromIndex != -1 && toIndex != -1 && fromIndex != toIndex){
-		mergeRegions[fromIndex] = mergeRegions[fromIndex].concat(mergeRegions[toIndex]);
-		mergeRegions.remove(toIndex);
-		return;
-	}
-
-};
-
-// iterate the image from the top left to the bottom right
-var length = imageData.length,
-width = canvas.width;
-
-for(var i = 0, u = 1; i < length; i+=4, u++){
-	
-	var r = imageData[i],
-	g = imageData[i+1],
-	b = imageData[i+2],
-	x = (u>width)?((u%width)-1):u,
-	y = (u>width)?(Math.ceil(u/width)-1):1;
-	
-	if(classifySkin(r, g, b)){ // 
-		skinMap.push({"id": u, "skin": true, "region": 0, "x": x, "y": y, "checked": false});
-		
-		var region = -1,
-		checkIndexes = [u-2, (u-width)-2, u-width-1, (u-width)],
-		checker = false;
-		
-		for(var o = 0; o < 4; o++){
-			var index = checkIndexes[o];
-			if(skinMap[index] && skinMap[index].skin){
-				if(skinMap[index].region!=region && region!=-1 && lastFrom!=region && lastTo!=skinMap[index].region){
-					addMerge(region, skinMap[index].region);
+			for(var o = 0; o < rlen; o++){
+			
+				if(region[o] == from){
+					fromIndex = i;
 				}
-				region = skinMap[index].region;
-				checker = true;
-			}
-		}
-
-		if(!checker){
-			skinMap[u-1].region = detectedRegions.length;
-			detectedRegions.push([skinMap[u-1]]);
-			continue;
-		}else{
-			
-			if(region > -1){
 				
-				if(!detectedRegions[region]){
-					detectedRegions[region] = [];
+				if(region[o] == to){
+					toIndex = i;
 				}
-
-				skinMap[u-1].region = region;					
-				detectedRegions[region].push(skinMap[u-1]);
-
+										
 			}
+			
+		}
+
+		if(fromIndex != -1 && toIndex != -1 && fromIndex == toIndex){
+			return;
 		}
 		
-	}else{
-		skinMap.push({"id": u, "skin": false, "region": 0, "x": x, "y": y, "checked": false});
+		if(fromIndex == -1 && toIndex == -1){
+
+			mergeRegions.push([from, to]);
+			
+			return;
+		}
+
+		if(fromIndex != -1 && toIndex == -1){
+
+			mergeRegions[fromIndex].push(to);
+			return;
+		}
+
+		if(fromIndex == -1 && toIndex != -1){
+			mergeRegions[toIndex].push(from);
+			return;
+		}
+		
+		if(fromIndex != -1 && toIndex != -1 && fromIndex != toIndex){
+			mergeRegions[fromIndex] = mergeRegions[fromIndex].concat(mergeRegions[toIndex]);
+			mergeRegions.remove(toIndex);
+			return;
+		}
+
+	};
+
+	// iterate the image from the top left to the bottom right
+	var length = imageData.length,
+	width = canvas.width;
+
+	for(var i = 0, u = 1; i < length; i+=4, u++){
+		
+		var r = imageData[i],
+		g = imageData[i+1],
+		b = imageData[i+2],
+		x = (u>width)?((u%width)-1):u,
+		y = (u>width)?(Math.ceil(u/width)-1):1;
+		
+		if(classifySkin(r, g, b)){ // 
+			skinMap.push({"id": u, "skin": true, "region": 0, "x": x, "y": y, "checked": false});
+			
+			var region = -1,
+			checkIndexes = [u-2, (u-width)-2, u-width-1, (u-width)],
+			checker = false;
+			
+			for(var o = 0; o < 4; o++){
+				var index = checkIndexes[o];
+				if(skinMap[index] && skinMap[index].skin){
+					if(skinMap[index].region!=region && region!=-1 && lastFrom!=region && lastTo!=skinMap[index].region){
+						addMerge(region, skinMap[index].region);
+					}
+					region = skinMap[index].region;
+					checker = true;
+				}
+			}
+
+			if(!checker){
+				skinMap[u-1].region = detectedRegions.length;
+				detectedRegions.push([skinMap[u-1]]);
+				continue;
+			}else{
+				
+				if(region > -1){
+					
+					if(!detectedRegions[region]){
+						detectedRegions[region] = [];
+					}
+
+					skinMap[u-1].region = region;					
+					detectedRegions[region].push(skinMap[u-1]);
+
+				}
+			}
+			
+		}else{
+			skinMap.push({"id": u, "skin": false, "region": 0, "x": x, "y": y, "checked": false});
+		}
+
 	}
 
-}
-
-merge(detectedRegions, mergeRegions);
-analyseRegions();
+	merge(detectedRegions, mergeRegions);
+	analyseRegions();
 };
 
 // function for merging detected regions
