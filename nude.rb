@@ -1,11 +1,5 @@
 require 'rmagick'
-=begin
- * Nude.js - Nudity detection with Javascript and HTMLCanvas
- * 
- * Author: Patrick Wied ( http:#www.patrick-wied.at )
- * Version: 0.1  (2010-11-21)
- * License: MIT License
-=end
+
 class Nude
   attr_accessor :skin_regions, :skin_map, :image, :result
 
@@ -17,7 +11,8 @@ class Nude
     @skin_regions = []
     @skin_map = []
     @image = Magick::Image.read(file_path).first
-    
+    @image.resize_to_fit!(750)
+
     scan_image if scan_immediately
   end
 
@@ -195,7 +190,6 @@ class Nude
   end
 
   def analyseRegions
-    puts "analysing regions"
 
     # sort the detected regions by size
     length = @skin_regions.length
@@ -358,5 +352,6 @@ class Nude
     return [(r/sum), (g/sum), (b/sum)]
   end
 end
+
 
 

@@ -1,0 +1,6 @@
+Usage
+
+    irb
+    require 'rubygems'
+    require 'nude'
+    puts Nude.new(path_to_image).result
