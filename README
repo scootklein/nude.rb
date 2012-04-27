@@ -1,6 +1,8 @@
+Port of nude.js into Ruby using ImageMagick. Accuracy not guaranteed - in fact it's quite abysmal even in light of the academic paper that it's derived from claiming it has north of 90% accuracy. Use at your own peril.
+
 Usage
 
     irb
     require 'rubygems'
-    require 'nude'
+    load 'nude.rb'
     puts Nude.new(path_to_image).result
